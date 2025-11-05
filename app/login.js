@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, styleSheet } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Link } from 'expo-router';
 
-export default function LoginScreen({ navigation }) {
+export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -31,13 +32,8 @@ return (
         onChangeText={setPassword}
     />
 
-    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styleSheet.link}>Create an account</Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
-        <Text style={styleSheet.link}>Forgot password?</Text>
-    </TouchableOpacity>
+    <Link href= "/register" style={styles.link}>Create an account</Link>
+    <Link href= "/reset-password" style={styles.link}>Forgot password?</Link>
 
     <TouchableOpacity onPress={() => navigation.navigate('handleLogin')}>
         <Text style={styleSheet.link}>Continue</Text>
@@ -45,3 +41,12 @@ return (
 </View>
 );
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', padding: 20 },
+    title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+    input: { borderWidth: 1, borderColor: "#ccc", padding: 10, matignBottom: 10, borderRadius: 5 },
+    link: { color: '#007BFF', marginBottom: 10, textAlign: 'center' },
+    button: { backgroundColour: "#007BFF", padding: 15, borderRadius: 5, marginTop: 10 },
+    buttonText: { color: '#fff', textAlign: 'center', fontWeight: 'bold'},
+});
