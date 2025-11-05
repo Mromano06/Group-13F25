@@ -1,9 +1,12 @@
 {
-    "expo": { 
+  "expo": {
     "name": "TripTracker",
     "slug": "trip-tracker",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
-    "scheme": "triptracker"
-    }
+    "scheme": "triptracker",
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
 }
