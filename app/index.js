@@ -1,34 +1,25 @@
-import { StyleSheet, Text, View } from "react-native";
+import 'react-native-gesture-handler';
+import { registerRootComponent } from 'expo';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-export default function Page() {
+// import LoginScreen from './screens/LoginScreen';
+// import SignupScreen from './screens/SignupScreen';
+// import ResetPasswordScreen from './screens/ResetPasswordScreen';
+
+const Stack = createNativeStackNavigator();
+
+function App() {
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.title}>Hello World</Text>
-        <Text style={styles.subtitle}>This is the first page of your app.</Text>
-      </View>
-    </View>
-  );
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen}/>
+        <Stack.Screen name="Register" component={RegisterScreen}/>
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    padding: 24,
-  },
-  main: {
-    flex: 1,
-    justifyContent: "center",
-    maxWidth: 960,
-    marginHorizontal: "auto",
-  },
-  title: {
-    fontSize: 64,
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 36,
-    color: "#38434D",
-  },
-});
+registerRootComponenet(App);
