@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const router = useRouter();
+
     const handleLogin = () => {
-        // Placeholder to handle the logins logic
-        console.log('Logging in with:', email, password);
+        // TODO: Implement authentication logic here
+        router.replace('/driving-data');
     };
 
 return (
@@ -32,12 +34,18 @@ return (
         onChangeText={setPassword}
     />
 
-    <Link href= "/register" style={styles.link}>Create an account</Link>
-    <Link href= "/reset-password" style={styles.link}>Forgot password?</Link>
-
     <TouchableOpacity onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Continue</Text>
     </TouchableOpacity>
+
+    <TouchableOpacity onPress={() => router.push('/register')}>
+        <Text style={styles.link}>Create an account</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity onPress={() => router.push('/reset-password')}>
+        <Text style={styles.link}>Forgot password?</Text>
+    </TouchableOpacity>
+
 </View>
 );
 }
