@@ -21,6 +21,11 @@ export default function Register() {
       return;
     }
 
+    if (password.length < 6) {
+    Alert.alert('Weak Password', 'Password must be at least 6 characters.');
+    return;
+  }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
