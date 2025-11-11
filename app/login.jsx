@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/firebaseConfig"; 
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -8,9 +10,22 @@ export default function Login() {
 
     const router = useRouter();
 
-    const handleLogin = () => {
-        // TODO: Implement authentication logic here
-        router.replace('/driving-data');
+    const handleLogin = async () => {
+        if (!email || !password) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            console.log('Logged in as:', user.uid);
+
+            router.replace('/driving-data');
+        } catch (error) {
+            console.error('Login error:', error.message);
+            alert(error.message);
+        }
     };
 
 return (
