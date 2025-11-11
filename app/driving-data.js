@@ -1,17 +1,55 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import * as Location from 'expo-location';
 
-export default function DrivingData() {
-  const router = useRouter();
+// For testing 6UVc39PXQxT9VcdI1OApmrEciTs1, is my uid 
 
-  const drivingStats = {
-    DriverScore: 85, // Determined by the acceleration
-    topSpeed: '123km/h',
-    avgSpeed: '77km/h',
-    tripDuration: '5h 30m',
-    startLocation: 'New York',
-    endLocation: 'Los Angeles',
+export default function DashboardScreen() {
+  const [tracking, setTracking] = useState(false);
+  const [locationSubscription, setLocationSubscription] = useState(null);
+  const [locationData, setLocationData] = useState([]);
+
+  const startTracking = async () => { // Request location permissions
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission denied', 'Location access is required to start tracking.');
+      return;
+    }
+
+    const subscription = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        timeInterval: 1000,
+        distanceInterval: 1,
+      },
+      (location) => {
+        const { latitude, longitude, speed } = location.coords;
+        const timestamp = location.timestamp;
+
+        // add check for null/-1 speed
+        const newEntry = { latitude, longitude, speed, timestamp };
+        setLocationData((prev) => [...prev, newEntry]); // Append new data point
+      }
+    );
+
+    setLocationSubscription(subscription);
+    setTracking(true);
+    Alert.alert('Trip Started', 'Tracking has begun.');
+  };
+
+  const stopTracking = () => {
+    if (locationSubscription) {
+      locationSubscription.remove();
+      setLocationSubscription(null);
+    }
+    setTracking(false);
+    Alert.alert('Trip Ended', `Tracking stopped. ${locationData.length} data points collected.`);
+  };
+
+  const downloadData = () => {
+    console.log('Collected Data:', locationData);
+    Alert.alert('Download Requested', 'Data logged to console for now.');
+    // Later: send to backend or export as file
   };
 
   return (
@@ -19,63 +57,47 @@ export default function DrivingData() {
       <Text style={styles.title}>Driving Data Dashboard</Text>
 
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Trip Started')}>
+        <TouchableOpacity style={styles.button} onPress={startTracking}>
           <Text style={styles.buttonText}>Start Trip</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Trip Ended')}>
+        <TouchableOpacity style={styles.button} onPress={stopTracking}>
           <Text style={styles.buttonText}>End Trip</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Download Requested')}>
+        <TouchableOpacity style={styles.button} onPress={downloadData}>
           <Text style={styles.buttonText}>Download Data</Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>Driver Score:</Text>
-        <Text style={styles.value}>{drivingStats.DriverScore}</Text>
-
-        <Text style={styles.label}>Top Speed:</Text>
-        <Text style={styles.value}>{drivingStats.topSpeed}</Text>
-
-        <Text style={styles.label}>Average Speed:</Text>
-        <Text style={styles.value}>{drivingStats.avgSpeed}</Text>
-
-        <Text style={styles.label}>Trip Duration:</Text>
-        <Text style={styles.value}>{drivingStats.tripDuration}</Text>
-
-        <Text style={styles.label}>Start Location:</Text>
-        <Text style={styles.value}>{drivingStats.startLocation}</Text>
-
-        <Text style={styles.label}>End Location:</Text>
-        <Text style={styles.value}>{drivingStats.endLocation}</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#F5F5F5' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  card: {
+  container: {
+    flex: 1,
+    paddingTop: 80,
+    alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    marginTop: 20,
   },
-  label: { fontSize: 16, color: '#555', marginTop: 10 },
-  value: { fontSize: 20, fontWeight: '600', marginTop: 5 },
-  buttonGroup: { marginTop: 10 },
+  title: {
+    fontSize: 24,
+    marginBottom: 30,
+    fontWeight: 'bold',
+  },
+  buttonGroup: {
+    flexDirection: 'column',
+    gap: 20,
+  },
   button: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 15,
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 10,
   },
-  buttonText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
 });

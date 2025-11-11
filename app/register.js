@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useRouter, Link } from 'expo-router';
+import { auth } from '../firebase/firebaseConfig';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const router = useRouter();
 
-  const handleRegister = () => {
-    console.log('Registering:', email, password, confirmPassword);
-    // Add validation and backend logic here
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('User registered:', user.uid);
+
+      router.replace('/driving-data');
+    } catch (error) {
+      console.error('Registration error:', error.message);
+      Alert.alert('Registration Failed', error.message);
+    }
   };
 
   return (
@@ -48,7 +69,7 @@ export default function Register() {
       <Link href="/login" style={styles.link}>Back to Login</Link>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20 },
