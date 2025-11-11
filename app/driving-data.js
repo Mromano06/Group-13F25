@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as Location from 'expo-location';
 
+// For testing 6UVc39PXQxT9VcdI1OApmrEciTs1, is my uid 
+
 export default function DashboardScreen() {
   const [tracking, setTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState(null);
