@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as Location from 'expo-location';
-
-// For testing 6UVc39PXQxT9VcdI1OApmrEciTs1, is my uid 
+import { auth, database } from '../firebase/firebaseConfig';
+import {ref, push, set} from 'firebase/database';
 
 export default function DashboardScreen() {
   const [tracking, setTracking] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState(null);
   const [locationData, setLocationData] = useState([]);
+  const [tripID, setTripID] = useState(null);
 
   const startTracking = async () => { // Request location permissions
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -15,6 +16,9 @@ export default function DashboardScreen() {
       Alert.alert('Permission denied', 'Location access is required to start tracking.');
       return;
     }
+
+    const newTripID = Date.now().toString();
+    setTripID(newTripID);
 
     const subscription = await Location.watchPositionAsync(
       {
@@ -26,9 +30,10 @@ export default function DashboardScreen() {
         const { latitude, longitude, speed } = location.coords;
         const timestamp = location.timestamp;
 
-        // add check for null/-1 speed
+        if (speed == null || speed == -1) return;
+
         const newEntry = { latitude, longitude, speed, timestamp };
-        setLocationData((prev) => [...prev, newEntry]); // Append new data point
+        setLocationData((prev) => [...prev, newEntry]);
       }
     );
 
@@ -37,19 +42,34 @@ export default function DashboardScreen() {
     Alert.alert('Trip Started', 'Tracking has begun.');
   };
 
-  const stopTracking = () => {
+  const stopTracking = async () => {
     if (locationSubscription) {
       locationSubscription.remove();
       setLocationSubscription(null);
     }
-    setTracking(false);
-    Alert.alert('Trip Ended', `Tracking stopped. ${locationData.length} data points collected.`);
-  };
 
+    setTracking(false);
+
+    const userID = auth.currentUser.uid;
+    const tripRef = push(ref(database, `trips/${userID}/${tripID}`));
+
+    const tripData = {
+      startTime: locationData[0]?.timestamp || new Date().toISOString(),
+      endTime: locationData[locationData.length - 1]?.timestamp || new Date().toISOString(),
+      sensorData: locationData,
+    }
+
+    await set(tripRef, tripData);
+
+    Alert.alert('Trip Ended', 'Tracking has stopped.');
+    setLocationData([]); // Clear data
+    setTripID(null);
+  }
+
+  // TODO: Download to file option implementation
   const downloadData = () => {
     console.log('Collected Data:', locationData);
     Alert.alert('Download Requested', 'Data logged to console for now.');
-    // Later: send to backend or export as file
   };
 
   return (
