@@ -23,7 +23,7 @@ export default function DashboardScreen() {
     const subscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 1000,
+        timeInterval: 500,
         distanceInterval: 1,
       },
       (location) => {
@@ -75,7 +75,14 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Driving Data Dashboard</Text>
-
+        <View style={styles.statusContainer}> 
+          <Text style={styles.statusCombined}>
+            Tracking Status: {''}
+            <Text style={[tracking ? styles.online : styles.offline]}>
+              {tracking ? 'Online' : 'Offline'}
+            </Text>
+          </Text>
+        </View>
       <View style={styles.buttonGroup}>
         <TouchableOpacity style={styles.button} onPress={startTracking}>
           <Text style={styles.buttonText}>Start Trip</Text>
@@ -119,5 +126,22 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
+  },
+  statusContainer: {
+    marginBottom: 40,
+  },
+  statusLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  online: {
+    color: 'green',
+  },
+  offline: {
+    color: 'red',
   },
 });
