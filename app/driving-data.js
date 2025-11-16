@@ -76,26 +76,25 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-    
-    <View style={styles.headerBar}>
-      <Text style={styles.headerTitle}>Driving Data</Text>
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={async () => {
-          try {
-            await auth.signOut();
-            // Navigate to login screen after successful logout
-            router.replace('/login');
-          } catch (error) {
-            Alert.alert('Logout Error', error.message);
-          }
-        }}
-        accessibilityLabel="Logout"
-        activeOpacity={0.7}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.headerBar}>
+        <Text style={styles.headerTitle}>Driving Data</Text>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={async () => {
+            try {
+              await auth.signOut();
+              // Navigate to login screen after successful logout
+              router.replace('/login');
+            } catch (error) {
+              Alert.alert('Logout Error', error.message);
+            }
+          }}
+          accessibilityLabel="Logout"
+          activeOpacity={0.7}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.title}>Driving Data Dashboard</Text>
         <View style={styles.statusContainer}> 
@@ -166,5 +165,30 @@ const styles = StyleSheet.create({
   },
   offline: {
     color: 'red',
+  },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
