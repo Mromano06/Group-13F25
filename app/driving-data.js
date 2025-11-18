@@ -11,6 +11,10 @@ export default function DashboardScreen() {
   const [locationSubscription, setLocationSubscription] = useState(null);
   const [locationData, setLocationData] = useState([]);
   const [tripID, setTripID] = useState(null);
+  const [driverScore, setDriverScore] = useState(0);
+  const speedLimit = 80; // km/h
+  const harshAcceleration = 3.0;
+  const harshBraking = -3.0;
 
   const startTracking = async () => { // Request location permissions
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -54,11 +58,15 @@ export default function DashboardScreen() {
 
     const userID = auth.currentUser.uid;
     const tripRef = push(ref(database, `trips/${userID}/${tripID}`));
+    const score = calculateDriverScore(locationData);
+    setDriverScore(score);
+    const safeScore = typeof score === 'number' && !isNaN(score) ? score : 0;
 
     const tripData = {
       startTime: locationData[0]?.timestamp || new Date().toISOString(),
       endTime: locationData[locationData.length - 1]?.timestamp || new Date().toISOString(),
       sensorData: locationData,
+      driverScore: safeScore, // Ensure score is a valid number
     }
 
     await set(tripRef, tripData);
@@ -73,6 +81,42 @@ export default function DashboardScreen() {
     console.log('Collected Data:', locationData);
     Alert.alert('Download Requested', 'Data logged to console for now.');
   };
+
+  const calculateDriverScore = (data) => {
+    if (data.length < 2) return 100; // Not enough data to evaluate
+
+    let speedingEvents = 0;
+    let harshAccelerationEvents = 0;
+    let harshBrakingEvents = 0;
+
+    for (let i = 1; i < data.length; i++) {
+      const prev = data[i - 1];
+      const curr = data[i];
+  
+
+    if (curr.speed > speedLimit) {
+      speedingEvents++;
+    }
+
+    const acceleration = (curr.speed - prev.speed) / ((curr.timestamp - prev.timestamp) / 1000); // m/s²
+    if (acceleration > harshAcceleration) {
+      harshAccelerationEvents++;
+    }
+    if (acceleration < harshBraking) {
+      harshBrakingEvents++;
+    }
+  }
+
+  const duration = (data[data.length - 1].timestamp - data[0].timestamp) / 1000; // seconds
+  const speedingRate = speedingEvents / duration;
+  const harshEventRate = (harshAccelerationEvents + harshBrakingEvents) / duration;
+
+  let score = 100;
+  score -= speedingRate * 20;
+  score -= harshEventRate * 30;
+
+  return Math.max(0, Math.min(100, Math.round(score))); // Clamp between 0 and 100
+  }
 
   return (
     <View style={styles.container}>
@@ -95,16 +139,25 @@ export default function DashboardScreen() {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-
+      <View style={styles.topSpacer} />
       <Text style={styles.title}>Driving Data Dashboard</Text>
-        <View style={styles.statusContainer}> 
-          <Text style={styles.statusCombined}>
-            Tracking Status: {''}
-            <Text style={[tracking ? styles.online : styles.offline]}>
-              {tracking ? 'Online' : 'Offline'}
-            </Text>
+      <View style={styles.statusContainer}> 
+        <Text style={styles.statusCombined}>
+          Tracking Status: {''}
+          <Text style={[tracking ? styles.online : styles.offline]}>
+            {tracking ? 'Online' : 'Offline'}
           </Text>
-        </View>
+        </Text>
+      </View>
+      {driverScore !== null && (
+      <View style={styles.scoreContainer}>
+        <Text style={styles.scoreText}>
+          Driver Score:{' '} <Text style={[styles.scoreValue, {
+            color: driverScore >= 90 ? 'green' : driverScore >= 70 ? 'orange' : 'red'
+          }]}>{driverScore}</Text>
+        </Text>
+      </View>
+      )}
       <View style={styles.buttonGroup}>
         <TouchableOpacity style={styles.button} onPress={startTracking}>
           <Text style={styles.buttonText}>Start Trip</Text>
@@ -128,6 +181,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     alignItems: 'center',
     backgroundColor: '#fff',
+    marginBottom: 25,
   },
   title: {
     fontSize: 24,
@@ -153,11 +207,11 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   statusLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   statusText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   online: {
@@ -191,4 +245,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  scoreText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
+  scoreValue: {
+    fontWeight: 'bold',
+  },
+  topSpacer: {
+  height: 40, // adjust as needed
+  },
+
+  scoreContainer: {
+    marginBottom: 20,
+  },
+
+  scoreText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
+  scoreValue: {
+    fontWeight: 'bold',
+  },
+  scoreContainer: {
+  marginBottom: 20, // increase this value for more space
+},
+
 });
