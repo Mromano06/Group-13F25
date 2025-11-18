@@ -13,3 +13,6 @@ The app is also secured by a login/registration, users must make an account and 
 - Scan the qr code given or locate the server
 
 Note: Make sure to login to both your phone and PC with the SAME expo accont
+
+## Disclaimer
+!!Expo gets constant updates so if prompted by powershell run any updates required!!
